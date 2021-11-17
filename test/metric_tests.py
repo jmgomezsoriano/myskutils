@@ -6,7 +6,7 @@ from mysutils.file import load_json
 
 from myskutils.metrics import sk_measure, SIMPLE_ACCURACY, format_value, select_metrics, MACRO_JACCARD, MACRO_F1, \
     MACRO_RECALL
-from myskutils.stats import confidence_score, measures_mean, _merge_dict, standard_deviation, standard_error
+from myskutils.stats import confidence_score, measures_mean, standard_deviation, standard_error
 
 Y_TRUES_FILE = 'test/trues.json'
 Y_PRED_FILE = 'test/pred.json'
@@ -35,9 +35,9 @@ class MyTestCase(unittest.TestCase):
         measures = load_json(MEASURES_FILE)
         self.assertDictEqual(confidence_score(measures), conf_95)
         self.assertDictEqual(confidence_score(measures, 0.99), conf_99)
-        self.assertDictEqual(measures_mean(_merge_dict(measures)), mean)
-        self.assertDictEqual(standard_deviation(_merge_dict(measures)), sd)
-        self.assertDictEqual(standard_error(_merge_dict(measures)), se)
+        self.assertDictEqual(measures_mean(measures), mean)
+        self.assertDictEqual(standard_deviation(measures), sd)
+        self.assertDictEqual(standard_error(measures), se)
         self.assertDictEqual(select_metrics(measure), {})
         self.assertDictEqual(select_metrics(measure, SIMPLE_ACCURACY, MACRO_RECALL, MACRO_F1, MACRO_JACCARD),
                              {'macro_f1': 0.6676911015978718, 'macro_jaccard': 0.6027144762993819,
