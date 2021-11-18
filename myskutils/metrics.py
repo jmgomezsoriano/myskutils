@@ -1,6 +1,7 @@
 from sys import stdout
 from typing import List, Dict, TextIO, Tuple, Union
 
+from mysutils.file import open_file
 from sklearn.metrics import accuracy_score, balanced_accuracy_score, f1_score, precision_score, recall_score, \
     jaccard_score
 
@@ -49,12 +50,14 @@ def sk_measure(trues: List[int], predictions: List[int]) -> Dict[str, float]:
 
 def print_metrics(measure: Dict[str, Union[float, Tuple[float, float]]],
                   metrics: List[str] = ALL_METRICS,
-                  file: TextIO = stdout) -> None:
+                  output: Union[TextIO, str] = stdout) -> None:
     """ Print a measure with different metrics.
     :param measure: The a dictionary with the metrics to print.
     :param metrics: The list to measures to print.
-    :param file: The file handler where the result are printed. By default in the standard output.
+    :param output: The file handler or the file path where the result are printed.
+       By default in the standard output.
     """
+    file = open_file(output, 'wt') if isinstance(output, str) else output
     _print_metric_if_show('Simple accuracy', measure, SIMPLE_ACCURACY, metrics, file)
     _print_metric_if_show('Balanced accuracy', measure, BALANCED_ACCURACY, metrics, file)
     print(file=file)
@@ -74,6 +77,8 @@ def print_metrics(measure: Dict[str, Union[float, Tuple[float, float]]],
     _print_metric_if_show('Macro Jaccard', measure, MACRO_JACCARD, metrics, file)
     _print_metric_if_show('Weighted Jaccard', measure, WEIGHTED_JACCARD, metrics, file)
     print(file=file)
+    if isinstance(output, str):
+        file.close()
 
 
 def select_metrics(measure: Dict[str, Union[float, Tuple[float, float]]],

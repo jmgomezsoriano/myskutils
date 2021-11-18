@@ -7,6 +7,7 @@ from mysutils.file import load_json
 from myskutils.metrics import sk_measure, SIMPLE_ACCURACY, format_value, select_metrics, MACRO_JACCARD, MACRO_F1, \
     MACRO_RECALL
 from myskutils.stats import confidence_score, measures_mean, standard_deviation, standard_error
+from myskutils.plot import plot_measure
 
 Y_TRUES_FILE = 'test/trues.json'
 Y_PRED_FILE = 'test/pred.json'
@@ -25,7 +26,7 @@ result = {
 
 
 class MyTestCase(unittest.TestCase):
-    def test_measurement(self):
+    def test_measurement(self) -> None:
         y_trues, y_pred = load_json(Y_TRUES_FILE), load_json(Y_PRED_FILE)
         measure = sk_measure(y_trues, y_pred)
         self.assertDictEqual(result, measure)  # add assertion here
@@ -42,6 +43,26 @@ class MyTestCase(unittest.TestCase):
         self.assertDictEqual(select_metrics(measure, SIMPLE_ACCURACY, MACRO_RECALL, MACRO_F1, MACRO_JACCARD),
                              {'macro_f1': 0.6676911015978718, 'macro_jaccard': 0.6027144762993819,
                               'macro_recall': 0.7197663971248877, 'simple_accuracy': 0.7314814814814815})
+
+    def test_plot(self) -> None:
+        conf_95 = {
+            'simple_accuracy': (0.6925925925925926, 0.03502136605451667),
+            'balanced_accuracy': (0.695702864876455, 0.0315404522111038),
+            'micro_f1': (0.6925925925925926, 0.03502136605451667),
+            'macro_f1': (0.6207920707004468, 0.038311962156994395),
+            'weighted_f1': (0.6897580626192598, 0.03565990800863161),
+            'micro_precision': (0.6925925925925926, 0.03502136605451667),
+            'macro_precision': (0.6386742183008606, 0.040704810624135446),
+            'weighted_precision': (0.7389542915931806, 0.03589302220107715),
+            'micro_recall': (0.6925925925925926, 0.03502136605451667),
+            'macro_recall': (0.6509717507624115, 0.03941730649957531),
+            'weighted_recall': (0.6925925925925926, 0.03502136605451667),
+            'micro_jaccard': (0.5316665991417848, 0.040809554891851146),
+            'macro_jaccard': (0.5584330739064476, 0.03740462144237966),
+            'weighted_jaccard': (0.602431880785639, 0.035765269919655784)
+        }
+
+        plot_measure(conf_95, conf_95)
 
 
 if __name__ == '__main__':
