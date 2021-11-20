@@ -21,6 +21,7 @@ def plot_measures(measures: List[Union[float, Tuple[float, float]]],
 
 
 def plot_measure(measure: Dict[str, Union[float, Tuple[float, float]]],
+                 detail: bool = True,
                  xticks: Iterable[str] = None,
                  filename: str = None,
                  color: str = 'black',
@@ -32,14 +33,17 @@ def plot_measure(measure: Dict[str, Union[float, Tuple[float, float]]],
                  mec: str = 'black',
                  **kwargs) -> None:
     x = np.arange(1, len(measure) + 1)
+    plt.figure(figsize=(8,7))
     plt.xticks(x, xticks if xticks else measure, rotation=90)
+    if not detail:
+        plt.ylim(ymin=0)
     if measure.values() and isinstance(list(measure.values())[0], tuple):
         y, err = merge_tuples(measure.values())
         plt.errorbar(x=x, y=y, yerr=err, color=color, capsize=capsize, linestyle=linestyle, marker=marker,
                      markersize=markersize, mfc=mfc, mec=mec, **kwargs)
     else:
-        y = measure.values()
-        plt.bar(x=x, height=y, color=color, capsize=capsize, linestyle=linestyle, **kwargs)
+        plt.bar(x=x, height=measure.values(), color=color, capsize=capsize, linestyle=linestyle, **kwargs)
+    plt.tight_layout()
     if filename:
         plt.savefig(filename)
     else:
