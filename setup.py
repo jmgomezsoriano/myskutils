@@ -40,7 +40,7 @@ setuptools.setup(
         'prepublish': PrepublishCommand,
     },
     name='myskutils',
-    version='0.0.4',
+    version='0.1.0',
     url='https://github.com/jmgomezsoriano/myskutils',
     license='LGPL2',
     author='José Manuel Gómez Soriano',
@@ -56,5 +56,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.7',
-    install_requires=['scikit-learn~=0.23.2', 'mysmallutils>=1.0.1,~=1.0.1']
+    install_requires=['scikit-learn~=0.23.2', 'mysmallutils>=1.0.4,~=1.0.4']
 )
