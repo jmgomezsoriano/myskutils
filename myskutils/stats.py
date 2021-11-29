@@ -87,7 +87,7 @@ def min_value(measures: Iterable[Dict[str, Tuple[float, float]]]) -> Union[Tuple
     if has_confidence(measures):
         mean = confidence_mean(measures)
         min_max = min_max_interval(mean)
-        return sorted(in_interval(min_max[1], mean), key=lambda x: x[1])
+        return sorted(in_interval(min_max[1]), key=lambda x: x[1])
     else:
         mean = measures_mean(measures)
         return min(mean.items(), key=lambda x: x[1])
