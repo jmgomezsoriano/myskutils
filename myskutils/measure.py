@@ -52,6 +52,26 @@ class Measure(Generic[T]):
         return Measure.from_dict(d)
 
     @staticmethod
+    def confidence_score_from_dict(d: Dict[str, List[float]], alpha: float = 0.95) -> 'Measure':
+        """ Create a measure with confidence interval from a list with the follow syntax:
+
+        .. code-block:: python
+
+            d = {
+                'Metric_name1': [v1.1, v1.2, v1.3, ..., v1.n],
+                'Metric_name2': [v2.1, v2.2, v2.3, ..., v2.n],
+                ...
+                'Metric_nameM': [vM.1, vM.2, vM.3, ..., vM.n],
+            }
+
+        :param d: The dictionary with the metrics names and the list of values.
+        :param alpha: The alpha value for the confidence interval. An alpha of 0.95 is a p value < 0.05.
+        :return: A measure object with mean value and confidence interval for all the metrics in the dictionary.
+        """
+        d = {name: CI.confidence_score(lst, alpha) for name, lst in d.items()}
+        return Measure.from_dict(d)
+
+    @staticmethod
     def mean(measures: List['Measure']) -> 'Measure':
         d = {name: mean(lst) for name, lst in merge_dicts(measures).items()}
         return Measure.from_dict(d)
