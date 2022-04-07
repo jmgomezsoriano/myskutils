@@ -1,11 +1,15 @@
 from sys import stdout
 from typing import Generic, Union, List, Iterable, Dict, TextIO, ItemsView
-import numpy as np
+from statistics import mean, stdev
 from mysutils.collections import merge_dicts
 from mysutils.file import open_file
 
 from myskutils.ci import CI
 from myskutils.metric import T, Metric, MetricName
+
+
+def filter_measure(data: dict, *metrics):
+    return {k: v for k, v in data.items() if k in metrics}
 
 
 class Measure(Generic[T]):
@@ -49,17 +53,17 @@ class Measure(Generic[T]):
 
     @staticmethod
     def mean(measures: List['Measure']) -> 'Measure':
-        d = {name: np.mean(lst) for name, lst in merge_dicts(measures).items()}
+        d = {name: mean(lst) for name, lst in merge_dicts(measures).items()}
         return Measure.from_dict(d)
 
     @staticmethod
-    def std(measures: List['Measure']) -> 'Measure':
-        d = {name: np.std(lst) for name, lst in merge_dicts(measures).items()}
+    def std(measures: Iterable['Measure']) -> 'Measure':
+        d = {name: stdev(lst) for name, lst in merge_dicts(measures).items()}
         return Measure.from_dict(d)
 
     @staticmethod
     def standard_error(measures: List['Measure']) -> 'Measure':
-        d = {name: np.std(lst) / len(measures) for name, lst in merge_dicts(measures).items()}
+        d = {name: stdev(lst) / len(measures) for name, lst in merge_dicts(measures).items()}
         return Measure.from_dict(d)
 
     def metric(self, name: [MetricName, str], new_name: str = None) -> Metric[T]:

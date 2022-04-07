@@ -56,5 +56,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.7',
-    install_requires=['scikit-learn~=0.23.2', 'mysmallutils>=1.0.4,~=1.0.4']
+    install_requires=['scikit-learn~=0.23.2', 'mysmallutils>=1.0.17,<=2.0']
 )

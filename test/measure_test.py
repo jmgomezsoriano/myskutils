@@ -3,7 +3,8 @@ import unittest
 from mysutils.file import load_json
 
 from myskutils.measure import Measure, MetricName, CI, Metric
-from myskutils.plot import plot
+from myskutils.plot import plot, plot_figure
+from test.results import conf_99
 
 Y_TRUES_FILE = 'test/trues.json'
 Y_PRED_FILE = 'test/pred.json'
@@ -104,6 +105,10 @@ class MyTestCase(unittest.TestCase):
         self.assertIn(CI(1.6, 0.1), ci1)
         self.assertIn(CI(1.5, 0.25), ci1)
         self.assertEqual(complex(1.5, 0.25), complex(ci1))
+
+    def test_plot(self) -> None:
+        fig = plot_figure(conf_99)
+        fig.show()
 
 
 if __name__ == '__main__':
