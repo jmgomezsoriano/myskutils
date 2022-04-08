@@ -64,51 +64,25 @@ class MyTestCase(unittest.TestCase):
                          'weighted_recall=0.6925925925925926±0.03502136605451667]')
         plot(list(ci_measures.metrics))
 
-    def test_ci_type(self) -> None:
-        ci1 = CI(1.5, 0.25)
-        self.assertEqual(str(ci1), '1.5±0.25')
-        self.assertEqual(ci1.value, 1.5)
-        self.assertEqual(ci1.ci, 0.25)
-        self.assertEqual(ci1.min, 1.25)
-        self.assertEqual(ci1.max, 1.75)
-        self.assertIsNone(ci1.p)
-        self.assertIsNone(ci1 ** 2)
-        self.assertTupleEqual(ci1.interval, (1.25, 1.75))
-        ci2 = CI.from_interval(2, 1.5, 0.95)
-        self.assertEqual(ci2.value, 1.75)
-        self.assertEqual(ci2.min, 1.5)
-        self.assertEqual(ci2.max, 2)
-        self.assertEqual(ci2.ci, 0.25)
-        self.assertEqual(ci2.p, 0.95)
-        self.assertEqual(ci2 ** 2, 0.9025)
-        self.assertFalse(ci1.is_significant(ci2))
-        self.assertTupleEqual(ci2.interval, (1.5, 2))
-        ci3 = CI(1, 0.25, 0.99)
-        ci4 = CI(1, 0.25, 0.99)
-        self.assertTrue(ci2.is_significant(ci3))
-        self.assertTrue(ci3.is_significant(ci2))
-        self.assertTrue(ci4 == ci3)
-        self.assertFalse(ci4 != ci3)
-        self.assertTrue(ci2 > ci3)
-        self.assertTrue(ci1 > ci3)
-        self.assertTrue(ci1 >= ci3)
-        self.assertFalse(ci1 <= ci3)
-        self.assertFalse(ci1 < ci3)
-        self.assertTupleEqual(tuple(ci1), (1.5, 0.25))
-        self.assertTrue(ci1)
-        self.assertTrue(ci2)
-        self.assertFalse(CI(0, 0))
-        self.assertEqual(float(ci1), 1.5)
-        self.assertEqual(float(ci2), 1.75)
-        self.assertEqual(hash(ci1), 3808642330255693810)
-        self.assertNotIn(ci1, ci2)
-        self.assertIn(CI(1.6, 0.1), ci1)
-        self.assertIn(CI(1.5, 0.25), ci1)
-        self.assertEqual(complex(1.5, 0.25), complex(ci1))
-
     def test_plot(self) -> None:
         fig = plot_figure(conf_99)
         fig.show()
+
+    def test_measures(self) -> None:
+        ci1, ci2, ci3 = CI(0.51, 0.12), CI(0.72, 0.25), CI(0.81, 0.09)
+
+        measure = Measure(Metric('Accuracy', ci1), Metric('F1-score', ci2), Metric('Precision', ci3))
+        self.assertDictEqual(dict(measure), {'Accuracy': (0.51, 0.12),
+                                             'F1-score': (0.72, 0.25),
+                                             'Precision': (0.81, 0.09)})
+
+        measure = Measure(Metric(MetricName.SIMPLE_ACCURACY, ci1),
+                          Metric(MetricName.WEIGHTED_F1, ci2),
+                          Metric(MetricName.MACRO_PRECISION, ci3))
+        self.assertDictEqual(dict(measure), {'accuracy': (0.51, 0.12),
+                                             'weighted_f1': (0.72, 0.25),
+                                             'macro_precision': (0.81, 0.09)})
+        pass
 
 
 if __name__ == '__main__':

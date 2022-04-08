@@ -158,7 +158,7 @@ class CI(object):
 
     def __repr__(self) -> str:
         """ A string representation of this confidence interval. """
-        return str(self)
+        return f'CI({self.__value}, {self.__ci})'
 
     def __str__(self) -> str:
         """ A string representation of this confidence interval. """

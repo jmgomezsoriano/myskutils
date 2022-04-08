@@ -1,6 +1,6 @@
 from enum import Enum, unique
 from math import ceil, floor
-from typing import Generic, TypeVar, Union, List, Iterable
+from typing import Generic, TypeVar, Union, List, Iterable, Any
 import sklearn.metrics
 
 from myskutils.ci import CI
@@ -45,6 +45,16 @@ class MetricName(Enum):
 
     def __eq__(self, other: Union['MetricName', str]) -> bool:
         return self.value == other if isinstance(other, str) else self.value == other.value and self.name == other.name
+
+    def __str__(self) -> str:
+        return self.value
+
+    def __repr__(self) -> str:
+        return str(self)
+
+    @staticmethod
+    def contains(value: Any) -> bool:
+        return str(value).lower() in {str(metric).lower() for metric in MetricName}
 
 
 class Metric(Generic[T]):
@@ -110,28 +120,40 @@ class Metric(Generic[T]):
         return iter((self.name, self.value))
 
     def __str__(self) -> str:
-        return f'{self.__name}={self.__value}'
+        return f'{self.name}={str(self.__value)}'
 
     def __repr__(self) -> str:
-        return str(self)
+        return f'Metric({repr(self.__name)}, {repr(self.__value)})'
 
-    def __eq__(self, other: 'Metric') -> bool:
-        return self.__value == other.__value
+    def __eq__(self, other: Any) -> bool:
+        if other is None:
+            raise ValueError('It is not possible to compare with None value.')
+        return self.__value == str(other)
 
-    def __ne__(self, other: 'Metric') -> bool:
-        return not self == other
+    def __ne__(self, other: Any) -> bool:
+        if other is None:
+            raise ValueError('It is not possible to compare with None value.')
+        return not self == str(other)
 
-    def __gt__(self, other: 'Metric') -> bool:
-        return other is None or self.__value > other.__value
+    def __gt__(self, other: Any) -> bool:
+        if other is None:
+            raise ValueError('It is not possible to compare with None value.')
+        return self.__value > str(other)
 
-    def __lt__(self, other: 'Metric') -> bool:
-        return other is None or self.__value < other.__value
+    def __lt__(self, other: Any) -> bool:
+        if other is None:
+            raise ValueError('It is not possible to compare with None value.')
+        return self.__value < str(other)
 
-    def __ge__(self, other: 'Metric') -> bool:
-        return other is None or self.__value >= other.__value
+    def __ge__(self, other: Any) -> bool:
+        if other is None:
+            raise ValueError('It is not possible to compare with None value.')
+        return self.__value >= other.__value
 
-    def __le__(self, other: 'Metric') -> bool:
-        return other is None or self.__value <= other.__value
+    def __le__(self, other: Any) -> bool:
+        if other is None:
+            raise ValueError('It is not possible to compare with None value.')
+        return self.__value <= other.__value
 
     def __hash__(self) -> int:
         return hash(self.__name)

@@ -1,5 +1,6 @@
+from json import JSONEncoder
 from sys import stdout
-from typing import Generic, Union, List, Iterable, Dict, TextIO, ItemsView
+from typing import Generic, Union, List, Iterable, Dict, TextIO, ItemsView, Any
 from statistics import mean, stdev
 from mysutils.collections import merge_dicts
 from mysutils.file import open_file
@@ -12,7 +13,7 @@ def filter_measure(data: dict, *metrics):
     return {k: v for k, v in data.items() if k in metrics}
 
 
-class Measure(Generic[T]):
+class Measure(Generic[T], JSONEncoder):
     @property
     def metrics(self) -> Iterable[Metric]:
         return self.__metrics.values()
@@ -21,11 +22,11 @@ class Measure(Generic[T]):
     def metric_names() -> List[str]:
         return [metric.value for metric in MetricName]
 
-    def __init__(self, metrics: Iterable[Metric]) -> None:
+    def __init__(self, *metrics: Metric) -> None:
         self.__metrics = {metric.name: metric for metric in metrics}
 
     @staticmethod
-    def from_evaluation(trues: List[float], predictions: List[float], *select: MetricName) -> 'Measure':
+    def from_evaluation(trues: List[float], predictions: List[float], *select: Union[MetricName, str]) -> 'Measure':
         select = select if select else (metric for metric in MetricName)
         return Measure([metric.calculate(trues, predictions) for metric in select])
 
@@ -55,7 +56,7 @@ class Measure(Generic[T]):
     def confidence_score_from_dict(d: Dict[str, List[float]], alpha: float = 0.95) -> 'Measure':
         """ Create a measure with confidence interval from a list with the follow syntax:
 
-        .. code-block:: python
+        .. code-block::
 
             d = {
                 'Metric_name1': [v1.1, v1.2, v1.3, ..., v1.n],
@@ -63,6 +64,8 @@ class Measure(Generic[T]):
                 ...
                 'Metric_nameM': [vM.1, vM.2, vM.3, ..., vM.n],
             }
+
+        Where *Metric_nameX* is the metric name, and *vX.Y* is the different values of each metric.
 
         :param d: The dictionary with the metrics names and the list of values.
         :param alpha: The alpha value for the confidence interval. An alpha of 0.95 is a p value < 0.05.
@@ -95,51 +98,55 @@ class Measure(Generic[T]):
         :param output: The file handler or the file path where the result are printed.
            By default in the standard output.
         """
-        metrics = metrics if metrics else [metric.name for metric in self.metrics]
+        metrics = metrics if metrics else {(str(metric)) for metric in self.metrics}
         file = open_file(output, 'wt') if isinstance(output, str) else output
-        if MetricName.SIMPLE_ACCURACY in metrics or MetricName.BALANCED_ACCURACY in metrics:
-            self._print_metric_if_show('Simple accuracy', MetricName.SIMPLE_ACCURACY, *metrics, file=file)
-            self._print_metric_if_show('Balanced accuracy', MetricName.BALANCED_ACCURACY, *metrics, file=file)
-            print(file=file)
-        if MetricName.MICRO_F1 in metrics or MetricName.MACRO_F1 in metrics or MetricName.WEIGHTED_F1 in metrics:
-            self._print_metric_if_show('Micro f-measure', MetricName.MICRO_F1, *metrics, file=file)
-            self._print_metric_if_show('Macro f-measure', MetricName.MACRO_F1, *metrics, file=file)
-            self._print_metric_if_show('Weighted f-measure', MetricName.WEIGHTED_F1, *metrics, file=file)
-            print(file=file)
-        if MetricName.MICRO_PRECISION in metrics or\
-                MetricName.MACRO_PRECISION in metrics or\
-                MetricName.WEIGHTED_PRECISION in metrics:
-            self._print_metric_if_show('Micro precision', MetricName.MICRO_PRECISION, *metrics, file=file)
-            self._print_metric_if_show('Macro precision', MetricName.MACRO_PRECISION, *metrics, file=file)
-            self._print_metric_if_show('Weighted precision', MetricName.WEIGHTED_PRECISION, *metrics, file=file)
-            print(file=file)
-        if MetricName.MICRO_RECALL in metrics or\
-                MetricName.MACRO_RECALL in metrics or\
-                MetricName.WEIGHTED_RECALL in metrics:
-            self._print_metric_if_show('Micro recall', MetricName.MICRO_RECALL, *metrics, file=file)
-            self._print_metric_if_show('Macro recall', MetricName.MACRO_RECALL, *metrics, file=file)
-            self._print_metric_if_show('Weighted recall', MetricName.WEIGHTED_RECALL, *metrics, file=file)
-            print(file=file)
-        if MetricName.MICRO_JACCARD in metrics or\
-                MetricName.MACRO_JACCARD in metrics or\
-                MetricName.WEIGHTED_JACCARD in metrics:
-            self._print_metric_if_show('Micro Jaccard', MetricName.MICRO_JACCARD, *metrics, file=file)
-            self._print_metric_if_show('Macro Jaccard', MetricName.MACRO_JACCARD, *metrics, file=file)
-            self._print_metric_if_show('Weighted Jaccard', MetricName.WEIGHTED_JACCARD, *metrics, file=file)
-            print(file=file)
+        # if str(MetricName.SIMPLE_ACCURACY).lower() in metrics or MetricName.BALANCED_ACCURACY in metrics:
+        #     self._print_metric_if_show('Simple accuracy', MetricName.SIMPLE_ACCURACY, *metrics, file=file)
+        #     self._print_metric_if_show('Balanced accuracy', MetricName.BALANCED_ACCURACY, *metrics, file=file)
+        #     print(file=file)
+        # if MetricName.MICRO_F1 in metrics or MetricName.MACRO_F1 in metrics or MetricName.WEIGHTED_F1 in metrics:
+        #     self._print_metric_if_show('Micro f-measure', MetricName.MICRO_F1, *metrics, file=file)
+        #     self._print_metric_if_show('Macro f-measure', MetricName.MACRO_F1, *metrics, file=file)
+        #     self._print_metric_if_show('Weighted f-measure', MetricName.WEIGHTED_F1, *metrics, file=file)
+        #     print(file=file)
+        # if MetricName.MICRO_PRECISION in metrics or\
+        #         MetricName.MACRO_PRECISION in metrics or\
+        #         MetricName.WEIGHTED_PRECISION in metrics:
+        #     self._print_metric_if_show('Micro precision', MetricName.MICRO_PRECISION, *metrics, file=file)
+        #     self._print_metric_if_show('Macro precision', MetricName.MACRO_PRECISION, *metrics, file=file)
+        #     self._print_metric_if_show('Weighted precision', MetricName.WEIGHTED_PRECISION, *metrics, file=file)
+        #     print(file=file)
+        # if MetricName.MICRO_RECALL in metrics or\
+        #         MetricName.MACRO_RECALL in metrics or\
+        #         MetricName.WEIGHTED_RECALL in metrics:
+        #     self._print_metric_if_show('Micro recall', MetricName.MICRO_RECALL, *metrics, file=file)
+        #     self._print_metric_if_show('Macro recall', MetricName.MACRO_RECALL, *metrics, file=file)
+        #     self._print_metric_if_show('Weighted recall', MetricName.WEIGHTED_RECALL, *metrics, file=file)
+        #     print(file=file)
+        # if MetricName.MICRO_JACCARD in metrics or\
+        #         MetricName.MACRO_JACCARD in metrics or\
+        #         MetricName.WEIGHTED_JACCARD in metrics:
+        #     self._print_metric_if_show('Micro Jaccard', MetricName.MICRO_JACCARD, *metrics, file=file)
+        #     self._print_metric_if_show('Macro Jaccard', MetricName.MACRO_JACCARD, *metrics, file=file)
+        #     self._print_metric_if_show('Weighted Jaccard', MetricName.WEIGHTED_JACCARD, *metrics, file=file)
+        #     print(file=file)
+        for i, metric in enumerate(metrics):
+            if i % 3 == 0:
+                print(file=file)
+            print(f'{metric}: ', self[metric].format(), end='\t', file=file)
         if isinstance(output, str):
             file.close()
 
-    def _print_metric_if_show(self, msg: str, metric: MetricName, *show: MetricName, file: TextIO):
-        """ Print a given metric if that metric is selected.
-        :param msg: The message to print with the metric.
-        :param metrics: All obtained metrics.
-        :param metric: The metric to print.
-        :param show: The list of metrics which will be printed.
-        :param file: The file handler where the result are printed. By default in the standard output.
-        """
-        if metric in show:
-            print(f'{msg}: ', self[metric].format(), end='\t', file=file)
+    # def _print_metric_if_show(self, msg: str, metric: MetricName, *show: MetricName, file: TextIO):
+    #     """ Print a given metric if that metric is selected.
+    #     :param msg: The message to print with the metric.
+    #     :param metrics: All obtained metrics.
+    #     :param metric: The metric to print.
+    #     :param show: The list of metrics which will be printed.
+    #     :param file: The file handler where the result are printed. By default in the standard output.
+    #     """
+    #     if metric in show:
+    #         print(f'{msg}: ', self[metric].format(), end='\t', file=file)
 
     def min_uncertainty(self) -> Metric:
         min_ci = None
@@ -165,20 +172,16 @@ class Measure(Generic[T]):
             max_v = metric if metric > max_v else max_v
         return max_v
 
-    def __dict__(self) -> Dict[str, Metric]:
-        return self.__metrics
-
     def __getitem__(self, item: Union[str, MetricName]):
         return self.__metrics[item]
 
     def __iter__(self) -> Iterable[Metric]:
-        return iter(self.__metrics)
+        return iter({metric.name: tuple(metric.value) if isinstance(metric.value, CI) else metric.value
+                     for metric in self.metrics}.items())
 
     def __str__(self) -> str:
         return 'Measure(' + ', '.join([str(metric) for metric in self.__metrics.values()]) + ')'
 
     def __repr__(self) -> str:
-        return str(self)
+        return 'Measure(' + ', '.join([repr(metric) for metric in self.__metrics.values()]) + ')'
 
-    def to_dict(self) -> dict:
-        return {metric.name: metric.to_tuple() for metric in self.__metrics.values()}
