@@ -28,14 +28,14 @@ class Measure(Generic[T], JSONEncoder):
     @staticmethod
     def from_evaluation(trues: List[float], predictions: List[float], *select: Union[MetricName, str]) -> 'Measure':
         select = select if select else (metric for metric in MetricName)
-        return Measure([metric.calculate(trues, predictions) for metric in select])
+        return Measure(*[metric.calculate(trues, predictions) for metric in select])
 
     @staticmethod
     def from_dict(d: dict) -> 'Measure':
-        return Measure([Metric(name, value) for name, value in d.items()])
+        return Measure(*[Metric(name, value) for name, value in d.items()])
 
     def select(self, *metric_names: Union[MetricName, str]) -> 'Measure':
-        return Measure([self.__metrics[metric] for metric in metric_names])
+        return Measure(*[self.__metrics[metric] for metric in metric_names])
 
     def value(self, metric: Union[MetricName, str]) -> T:
         return self.__metrics[metric].value
@@ -92,7 +92,7 @@ class Measure(Generic[T], JSONEncoder):
     def metric(self, name: [MetricName, str], new_name: str = None) -> Metric[T]:
         return Metric(new_name if new_name else name, self.__metrics[name].value)
 
-    def print(self, *metrics: MetricName, output: Union[TextIO, str] = stdout) -> None:
+    def print(self, *metrics: Union[MetricName, str], output: Union[TextIO, str] = stdout) -> None:
         """ Print a measure with different metrics.
         :param metrics: The list to measures to print.
         :param output: The file handler or the file path where the result are printed.

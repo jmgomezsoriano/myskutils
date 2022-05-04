@@ -40,7 +40,7 @@ setuptools.setup(
         'prepublish': PrepublishCommand,
     },
     name='myskutils',
-    version='0.1.3',
+    version='0.1.4',
     url='https://github.com/jmgomezsoriano/myskutils',
     license='LGPL2',
     author='José Manuel Gómez Soriano',
